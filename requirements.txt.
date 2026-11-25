@@ -1,0 +1,77 @@
+
+import os
+import time
+import requests
+from datetime import datetime
+
+MARKET = "EUR/USD"
+INTERVAL = 5
+
+TELEGRAM_TOKEN = os.getenv("9099560704:AAHsCsDJaxGH_hOq2YBSO2F_0UReiuoNlZE")
+TELEGRAM_CHAT_ID = os.getenv("7878257548")
+
+
+def analyze_market(prices):
+    if len(prices) < 3:
+        return "WAIT"
+
+    momentum = prices[-1] - prices[-3]
+
+    if momentum > 0.0001:
+        return "CALL"
+    elif momentum < -0.0001:
+        return "PUT"
+    return "WAIT"
+
+
+def send_telegram(message):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("Configuration Telegram manquante")
+        return
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+
+    try:
+        response = requests.post(
+            url,
+            data={
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": message
+            },
+            timeout=10
+        )
+        response.raise_for_status()
+    except requests.RequestException as error:
+        print("Erreur Telegram :", error)
+
+
+def main():
+    prices = [
+        1.1000, 1.1002, 1.1004,
+        1.1003, 1.1001, 1.0998
+    ]
+
+    while True:
+        signal = analyze_market(prices)
+        now = datetime.now().strftime("%H:%M:%S")
+
+        if signal != "WAIT":
+            message = (
+                f"EUR/USD\n"
+                f"Signal : {signal}\n"
+                f"Heure : {now}\n"
+                f"Mode : SIMULATION"
+            )
+            send_telegram(message)
+
+        print(now, MARKET, signal)
+
+        # Prix fictifs : démonstration uniquement
+        prices.append(prices[-1])
+        prices = prices[-10:]
+
+        time.sleep(INTERVAL)
+
+
+if __name__ == "__main__":
+    main()
