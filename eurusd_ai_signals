@@ -1,0 +1,53 @@
+
+import time
+from datetime import datetime
+
+# EUR/USD - AI SIGNAL BOT
+# Mode éducatif : simulation uniquement
+
+MARKET = "EUR/USD"
+INTERVAL = 5
+
+def analyze_market(prices):
+    if len(prices) < 3:
+        return "WAIT"
+
+    momentum = prices[-1] - prices[-3]
+
+    if momentum > 0.0001:
+        return "CALL"
+    elif momentum < -0.0001:
+        return "PUT"
+    else:
+        return "WAIT"
+
+
+def main():
+    print("==========================")
+    print(" EUR/USD AI SIGNAL BOT")
+    print("==========================")
+    print("Mode : SIMULATION")
+    print("Intervalle : 5 secondes")
+
+    # Prix fictifs pour les premiers tests
+    prices = [
+        1.1000, 1.1002, 1.1004,
+        1.1003, 1.1001, 1.0998
+    ]
+
+    while True:
+        signal = analyze_market(prices)
+
+        now = datetime.now().strftime("%H:%M:%S")
+
+        print(f"[{now}] {MARKET} : {signal}")
+
+        # Données de démonstration uniquement
+        prices.append(prices[-1])
+        prices = prices[-10:]
+
+        time.sleep(INTERVAL)
+
+
+if __name__ == "__main__":
+    main()
